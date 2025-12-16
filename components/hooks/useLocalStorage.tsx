@@ -13,6 +13,9 @@ export function useLocalStorage<T>({
   // Get initial value
   const readValue = (): T => {
     try {
+      // localStorage is unavailable during SSR; fall back to the initial value
+      if (typeof window === "undefined") return initialValue;
+
       const item = localStorage.getItem(key);
       return item ? JSON.parse(item) : initialValue;
     } catch (error) {
@@ -26,6 +29,8 @@ export function useLocalStorage<T>({
 
   // Update localStorage whenever state changes
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
     try {
       localStorage.setItem(key, JSON.stringify(storedValue));
     } catch (error) {
@@ -36,6 +41,8 @@ export function useLocalStorage<T>({
   // Clear
 
   const clearStorage = () => {
+    if (typeof window === "undefined") return;
+
     localStorage.removeItem(key);
     setStoredValue(initialValue);
   };

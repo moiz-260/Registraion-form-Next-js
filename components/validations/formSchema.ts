@@ -14,7 +14,15 @@ export const formSchema = yup.object().shape({
     .trim()
     .required("Phone is required")
     .min(11, "Min 11 numbers")
+    .min(11, "Min 11 numbers")
     .max(11, "Max 11 numbers"),
+
+  age: yup
+    .number()
+    .transform((value) => (isNaN(value) ? undefined : value))
+    .required("Age is required")
+    .positive("Age must be positive")
+    .integer("Age must be an integer"),
 
   dateofbirth: yup.string().required("Date of Birth is required"),
 
@@ -59,3 +67,14 @@ export const formSchema = yup.object().shape({
 });
 
 export type FormSchema = yup.InferType<typeof formSchema>;
+
+export const loginSchema = yup.object().shape({
+  email: yup
+    .string()
+    .trim()
+    .email("Invalid email")
+    .required("Email is required"),
+  password: yup.string().required("Password is required"),
+});
+
+export type LoginSchema = yup.InferType<typeof loginSchema>;
