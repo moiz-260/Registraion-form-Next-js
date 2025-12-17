@@ -3,7 +3,8 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { loginSchema, LoginSchema } from "@/components/validations/formSchema";
-import "@/components/Form/RegistrationForm.css"; // Reusing existing styles
+import "@/components/Form/SignUp/RegistrationForm.css"; // Reusing existing styles
+import { FormInput } from "@/components/Form_Input/FormInput";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/app/libs/supabase";
@@ -59,7 +60,7 @@ export default function LoginForm() {
                 <div className="modern-form-card">
                     <h1 className="modern-form-title">Welcome Back</h1>
 
-                    <form onSubmit={handleSubmit(onSubmit)}>
+                    <form onSubmit={handleSubmit(onSubmit)} autoComplete="off">
                         {errorMsg && (
                             <div style={{ color: "#ef4444", marginBottom: "1rem", textAlign: "center" }}>
                                 {errorMsg}
@@ -67,27 +68,27 @@ export default function LoginForm() {
                         )}
                         <div className="modern-form-grid full-width">
                             <div className="modern-input-wrapper">
-                                <input
-                                    type="email"
+                                <FormInput
+                                    name="email"
+                                    register={register}
+                                    error={errors.email}
                                     placeholder="Email Address"
+                                    type="email"
                                     className="modern-input"
-                                    {...register("email")}
+                                    autoComplete="email"
                                 />
-                                {errors.email && (
-                                    <span className="error">{errors.email.message}</span>
-                                )}
                             </div>
 
                             <div className="modern-input-wrapper">
-                                <input
-                                    type="password"
+                                <FormInput
+                                    name="password"
+                                    register={register}
+                                    error={errors.password}
                                     placeholder="Password"
+                                    type="password"
                                     className="modern-input"
-                                    {...register("password")}
+                                    autoComplete="current-password"
                                 />
-                                {errors.password && (
-                                    <span className="error">{errors.password.message}</span>
-                                )}
                             </div>
                         </div>
 

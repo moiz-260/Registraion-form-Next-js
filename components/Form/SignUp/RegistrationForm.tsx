@@ -9,8 +9,10 @@ import { LocationDetails } from "@/components/Location_Detail/LocationDetails";
 import { Security } from "@/components/Security/Security";
 import { TermsConditions } from "@/components/Form/TermsConditions";
 import type { FormData } from "@/components/types/form.type";
-import "@/components/Form/RegistrationForm.css";
+import "@/components/Form/SignUp/RegistrationForm.css";
 import { supabase } from "@/app/libs/supabase";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const defaultFormValues: FormData = {
   fullName: "",
@@ -29,6 +31,8 @@ const defaultFormValues: FormData = {
 
 export default function Form() {
   const [showSuccess, setShowSuccess] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const router = useRouter();
 
   const {
     register,
@@ -39,6 +43,7 @@ export default function Form() {
   } = useForm<FormData>({
     mode: "onChange",
     resolver: yupResolver(formSchema) as any,
+    defaultValues: defaultFormValues,
   });
 
   const [savedFormData, setSavedFormData, clearFormData] =
@@ -47,34 +52,62 @@ export default function Form() {
       initialValue: defaultFormValues,
     });
 
+  /* ===============================
+     Restore NON-SENSITIVE data
+  =============================== */
   useEffect(() => {
     if (savedFormData && Object.keys(savedFormData).length > 0) {
-      reset(savedFormData);
+      reset({
+        ...savedFormData,
+        password: "",
+        confirmPassword: "",
+      });
     }
   }, []);
 
+  /* ===============================
+     Save form to localStorage
+     (EXCLUDING passwords)
+  =============================== */
   useEffect(() => {
     const subscription = watch((value) => {
-      setSavedFormData(value as FormData);
+      const { password, confirmPassword, ...safeData } = value;
+      setSavedFormData(safeData as FormData);
     });
+
     return () => subscription.unsubscribe();
   }, [watch, setSavedFormData]);
 
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  /* ===============================
+     🔥 Fix BACK button (bfcache)
+  =============================== */
+  useEffect(() => {
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        reset(defaultFormValues);
+        clearFormData();
+      }
+    };
+
+    window.addEventListener("pageshow", handlePageShow);
+
+    return () => {
+      window.removeEventListener("pageshow", handlePageShow);
+    };
+  }, [reset, clearFormData]);
 
   const onSubmit = async (data: FormData) => {
     setErrorMsg(null);
+
     try {
-      // 1. Sign up user
-      const { data: authData, error: authError } = await supabase.auth.signUp({
+      const { error: authError } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
-        // We still save full_name to metadata as a fallback/display name
         options: {
           data: {
             full_name: data.fullName,
             phone: data.phone,
-            age: Number(data.age),
+            date_of_birth: data.dateofbirth,
             gender: data.gender,
             country: data.country,
             city: data.city,
@@ -88,36 +121,14 @@ export default function Form() {
         return;
       }
 
-      if (authData.user) {
-        // 2. Insert into user_profiles table
-        const { error: profileError } = await supabase
-          .from("user_profiles")
-          .insert([
-            {
-              id: authData.user.id,
-              email: data.email,
-              phone: data.phone,
-              age: Number(data.age),
-              gender: data.gender,
-              full_name: data.fullName,
-              date_of_birth: data.dateofbirth,
-              country: data.country,
-              city: data.city,
-              address: data.address,
-            },
-          ]);
-
-        if (profileError) {
-          console.error("Profile creation failed:", profileError);
-          // Optional: You might want to show a specific error or still allow success
-          // For now, we'll log it but proceed to success state
-        }
-      }
-
-      console.log("Form Submitted:", data);
       setShowSuccess(true);
       clearFormData();
       reset(defaultFormValues);
+
+      /* 🔒 Prevent going back to signup */
+      setTimeout(() => {
+        router.replace("/SignIn");
+      }, 3000);
     } catch (err) {
       console.error(err);
       setErrorMsg("An unexpected error occurred.");
@@ -126,6 +137,7 @@ export default function Form() {
 
   const closeSuccessMessage = () => {
     setShowSuccess(false);
+    router.replace("/SignIn");
   };
 
   return (
@@ -134,18 +146,25 @@ export default function Form() {
         <div className="modern-form-card">
           <h1 className="modern-form-title">Sign Up Form</h1>
 
-          <form onSubmit={handleSubmit(onSubmit)}>
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            autoComplete="off"
+          >
             {errorMsg && (
-              <div style={{ color: "#ef4444", marginBottom: "1rem", textAlign: "center" }}>
+              <div
+                style={{
+                  color: "#ef4444",
+                  marginBottom: "1rem",
+                  textAlign: "center",
+                }}
+              >
                 {errorMsg}
               </div>
             )}
+
             <PersonalInformation register={register} errors={errors} />
-
             <LocationDetails register={register} errors={errors} />
-
             <Security register={register} errors={errors} />
-
             <TermsConditions register={register} errors={errors} />
 
             <button
@@ -155,25 +174,42 @@ export default function Form() {
             >
               Submit
             </button>
+
+            <div style={{ marginTop: "1.5rem", textAlign: "center", color: "#64748b" }}>
+              Already have an account?{" "}
+              <Link href="/SignIn" style={{ color: "var(--primary)", fontWeight: 600, textDecoration: "none" }}>
+                Sign In
+              </Link>
+            </div>
           </form>
         </div>
       </div>
 
-      {/* Success Message Modal */}
       {showSuccess && (
         <>
-          <div className="success-overlay" onClick={closeSuccessMessage}></div>
+          <div
+            className="success-overlay"
+            onClick={closeSuccessMessage}
+          />
           <div className="success-message">
             <div className="success-icon">
               <svg viewBox="0 0 52 52">
-                <path className="success-checkmark" d="M14 27l8 8 16-16" />
+                <path
+                  className="success-checkmark"
+                  d="M14 27l8 8 16-16"
+                />
               </svg>
             </div>
-            <h2 className="success-title">Registration Successful!</h2>
+            <h2 className="success-title">
+              Registration Successful!
+            </h2>
             <p className="success-description">
               Your account has been created successfully. Welcome aboard!
             </p>
-            <button className="success-close-btn" onClick={closeSuccessMessage}>
+            <button
+              className="success-close-btn"
+              onClick={closeSuccessMessage}
+            >
               Got it!
             </button>
           </div>

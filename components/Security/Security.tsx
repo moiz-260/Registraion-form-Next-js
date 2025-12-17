@@ -27,6 +27,7 @@ export function Security({
             placeholder="Password"
             type="password"
             className="modern-input"
+            autoComplete="new-password"
           />
         </div>
 
@@ -38,6 +39,7 @@ export function Security({
             placeholder="Confirm Password"
             type="password"
             className="modern-input"
+            autoComplete="new-password"
           />
         </div>
       </div>

@@ -5,28 +5,62 @@ export const formSchema = yup.object().shape({
 
   email: yup
     .string()
-    .trim()
-    .email("Invalid email")
+    .email("Please enter a valid email address")
+    .matches(
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+      "Email must include a domain like .com"
+    )
     .required("Email is required"),
+
 
   phone: yup
     .string()
     .trim()
     .required("Phone is required")
     .min(11, "Min 11 numbers")
-    .min(11, "Min 11 numbers")
     .max(11, "Max 11 numbers"),
 
-  age: yup
-    .number()
-    .transform((value) => (isNaN(value) ? undefined : value))
-    .required("Age is required")
-    .positive("Age must be positive")
-    .integer("Age must be an integer"),
+  // age: yup
+  //   .number()
+  //   .transform((value) => (isNaN(value) ? undefined : value))
+  //   .required("Age is required")
+  //   .positive("Age must be positive")
+  //   .integer("Age must be an integer"),
 
-  dateofbirth: yup.string().required("Date of Birth is required"),
+  dateofbirth: yup
+    .date()
+    .typeError("Date of Birth is required")
+    .required("Date of Birth is required")
 
-  gender: yup.string().trim(),
+    // ❌ Future date check
+    .test(
+      "not-in-future",
+      "Date of Birth cannot be in the future",
+      (value) => {
+        if (!value) return true;
+        return value <= new Date();
+      }
+    )
+
+    // ❌ Age check (at least 1 year old)
+    .test(
+      "min-age",
+      "You must be at least 1 year old",
+      (value) => {
+        if (!value) return true;
+        const today = new Date();
+        const minDate = new Date(
+          today.getFullYear() - 1,
+          today.getMonth(),
+          today.getDate()
+        );
+        return value <= minDate;
+      }
+    ),
+
+
+
+  gender: yup.string().trim().required("Gender is Required"),
 
   country: yup
     .string()

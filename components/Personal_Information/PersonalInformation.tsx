@@ -43,6 +43,7 @@ export function PersonalInformation({
             error={errors.email}
             placeholder="Email"
             className="modern-input"
+            autoComplete="off"
           />
         </div>
 
@@ -67,7 +68,7 @@ export function PersonalInformation({
           />
         </div>
 
-        <div className="modern-input-wrapper">
+        {/* <div className="modern-input-wrapper">
           <FormInput
             name="age"
             register={register}
@@ -76,7 +77,7 @@ export function PersonalInformation({
             type="number"
             className="modern-input"
           />
-        </div>
+        </div> */}
 
         <div className="modern-input-wrapper">
           <FormSelect

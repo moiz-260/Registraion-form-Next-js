@@ -1,4 +1,4 @@
-import LoginForm from "@/components/Form/LoginForm";
+import LoginForm from "@/components/Form/SignIn/LoginForm";
 
 export default function SignInPage() {
     return (

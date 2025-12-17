@@ -26,7 +26,7 @@ export function FormSelect({
 }: FormSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedValue, setSelectedValue] = useState("");
-  const { ref } = register(name);
+  const { ref, onChange, name: fieldName } = register(name);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const selectedOption = options.find((opt) => opt.value === selectedValue);
@@ -34,6 +34,10 @@ export function FormSelect({
   const handleSelect = (value: string) => {
     setSelectedValue(value);
     setIsOpen(false);
+    // Notify react-hook-form of the change
+    if (onChange) {
+      onChange({ target: { name: fieldName, value } } as any);
+    }
   };
 
   // Close dropdown when clicking outside
@@ -68,9 +72,8 @@ export function FormSelect({
           {selectedOption?.label || placeholder}
         </span>
         <svg
-          className={`w-5 h-5 transition-transform duration-300 ${
-            isOpen ? "rotate-180" : ""
-          }`}
+          className={`w-5 h-5 transition-transform duration-300 ${isOpen ? "rotate-180" : ""
+            }`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -89,9 +92,8 @@ export function FormSelect({
           {options.map((option) => (
             <div
               key={option.value}
-              className={`modern-select-option ${
-                selectedValue === option.value ? "selected" : ""
-              }`}
+              className={`modern-select-option ${selectedValue === option.value ? "selected" : ""
+                }`}
               onClick={() => {
                 handleSelect(option.value);
               }}

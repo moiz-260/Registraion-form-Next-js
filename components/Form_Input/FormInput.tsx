@@ -1,25 +1,26 @@
 "use client";
 import { useState } from "react";
-import type { UseFormRegister, FieldError } from "react-hook-form";
-import type { FormData } from "@/components/types/form.type";
+import type { UseFormRegister, FieldError, FieldValues, Path } from "react-hook-form";
 
-interface FormInputProps {
-  name: keyof FormData;
-  register: UseFormRegister<FormData>;
+interface FormInputProps<T extends FieldValues> {
+  name: Path<T>;
+  register: UseFormRegister<T>;
   error?: FieldError;
   placeholder?: string;
   type?: string;
   className?: string;
+  autoComplete?: string;
 }
 
-export function FormInput({
+export function FormInput<T extends FieldValues>({
   name,
   register,
   error,
   placeholder,
   type = "text",
   className = "form-input",
-}: FormInputProps) {
+  autoComplete,
+}: FormInputProps<T>) {
   const [showPassword, setShowPassword] = useState(false);
 
   const isPasswordField =
@@ -37,18 +38,18 @@ export function FormInput({
       <div className="relative h-[60px] flex items-center">
         <input
           id={name}
-          className={`${className} ${
-            isPasswordField ? "pr-10" : ""
-          } h-full peer`}
+          className={`${className} ${isPasswordField ? "pr-10" : ""
+            } h-full peer`}
           placeholder=" "
           type={actualType}
+          autoComplete={autoComplete}
           {...register(name)}
         />
 
         {placeholder && (
           <label
             htmlFor={name}
-            className="absolute left-4 top-0 -translate-y-1/2 px-2 border-none rounded-md
+            className="absolute left-4 top-1 -translate-y-1/2 px-2 border-none rounded-md
               text-sm font-medium text-slate-500 transition-all duration-200 pointer-events-none
               peer-focus:text-blue-500 peer-focus:font-semibold"
             style={{
